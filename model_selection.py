@@ -20,24 +20,23 @@ X = DataFrame(X, columns={'dim1' , 'dim2'})
 y = DataFrame(y, columns={'target'})
 
 
-k_values = [ 2 , 3,5 , 7 ,10 , 13 , 15 , 18 ,20 , 23, 25 , 28 ,30 , 35 ,40 ,43 , 45 ,50 ]
+k_values = [ 2 , 3, 5 , 7 ,10 , 13 , 15 , 18 ,20 , 23, 25 , 28 ,30 , 35 ,40 ,43 , 45 ,50 ]
 k_values = [ 5 ,15 , 23 ,30 ,40 ,50  ]
 
-#===============================================================================
-# 
-# k_scores = []
-# for k in k_values:
-#     knn = KNeighborsClassifier(n_neighbors=k , weights='uniform'   )
-#     scores = cross_val_score(knn, X, y, cv=10)
-#     k_scores.append(scores.mean())
-# print(k_scores)
-# # plot the value of K for KNN (x-axis) versus the cross-validated accuracy (y-axis) or the metric
-# plt.plot(k_values, k_scores)
-# plt.xticks(k_values)
-# plt.xlabel('Value of K for KNN')
-# plt.ylabel('Accuracy')
-# plt.show()
-#===============================================================================
+ 
+k_misclass_rates = []
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k , weights='uniform'   )
+    scores = cross_val_score(knn, X, y['target'], cv=10)
+    k_misclass_rates.append( 1- scores.mean())
+print(k_misclass_rates)
+# plot the value of K for KNN (x-axis) versus the cross-validated misclassification (y-axis) or the metric
+plt.plot(k_values, k_misclass_rates)
+plt.xticks(k_values)
+plt.title('Misclassification rates for 1000 datapoints with different values of k')
+plt.xlabel('Value of K for KNN')
+plt.ylabel('Misclassification rate')
+plt.show()
 
 def loss_func(x):
     loss_counts = [ i for i in x if i != x['target'] and  i == i  ]
@@ -61,6 +60,7 @@ def diff(a ,b):
 
 bias_values = []
 variance_values = []
+k_misclass_rates = []
 for k in k_values:
     var_bias_df = y 
     scores = []
@@ -80,6 +80,10 @@ for k in k_values:
         scores.append(score)
         #print score
     print "=====Bootstrapping done======"  
+    
+    #saving mean misclassification rate for specific k
+    k_misclass_rates.append(1 - np.mean(scores))
+    
     var_bias_df['bias'] = var_bias_df.apply(  loss_func ,  axis = 1)
     var_bias_df['var'] = var_bias_df.apply(  variance_func ,  axis = 1)
     
@@ -92,7 +96,12 @@ for k in k_values:
     variance_values.append( np.mean(list(filter(lambda x: x!= -1, var_list))))
     print "==========="
 
-
+plt.plot(k_values, k_misclass_rates)
+plt.xticks(k_values)
+plt.title('Misclassification rates for 1000 datapoints with different values of k')
+plt.xlabel('Value of K for KNN')
+plt.ylabel('Misclassification rate')
+plt.show()
 
 plt.figure(1)
 plt.subplot(211)
